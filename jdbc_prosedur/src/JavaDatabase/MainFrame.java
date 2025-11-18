@@ -8,26 +8,30 @@ import javax.swing.table.DefaultTableModel;
 import java.sql.*;
 import java.util.*;
 import javax.swing.*;
+import java.io.*;
+import javadatabase.Mahasiswa;
+
 /**
  *
  * @author liaa
  */
 public class MainFrame extends javax.swing.JFrame {
-    
+
     DefaultTableModel modelMahasiswa;
     boolean isEdit;
+
     /**
      * Creates new form MainFrame
      */
     public MainFrame() {
         initComponents();
-        String[] kolom = {"ID","Nama", "NIM"};
+        String[] kolom = {"ID", "Nama", "NIM"};
         modelMahasiswa = new DefaultTableModel(
-        new String[]{"ID", "Nama", "NIM"}, 0);
+                new String[]{"ID", "Nama", "NIM"}, 0);
         tblMahasiswa.setModel(modelMahasiswa);
         isEdit = false;
         loadData();
-        
+
     }
 
     /**
@@ -48,11 +52,12 @@ public class MainFrame extends javax.swing.JFrame {
         tblMahasiswa = new javax.swing.JTable();
         btnHapus = new javax.swing.JButton();
         btnEdit = new javax.swing.JButton();
+        btnUpload = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(153, 204, 255));
 
-        btnSubmit.setText("Submit");
+        btnSubmit.setText("Insert");
         btnSubmit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSubmitActionPerformed(evt);
@@ -95,6 +100,13 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        btnUpload.setText("Upload");
+        btnUpload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUploadActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -103,11 +115,14 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGap(46, 46, 46)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnUpload, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnSubmit, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSubmit, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
@@ -132,12 +147,12 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtNama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblNim))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnSubmit)
-                .addGap(46, 46, 46)
+                .addGap(81, 81, 81)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnHapus)
-                    .addComponent(btnEdit))
+                    .addComponent(btnEdit)
+                    .addComponent(btnSubmit)
+                    .addComponent(btnUpload))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(142, Short.MAX_VALUE))
@@ -151,8 +166,8 @@ public class MainFrame extends javax.swing.JFrame {
         Mahasiswa m = new Mahasiswa(txtNim.getText(), txtNama.getText(), 2025);
         m.insert();
         loadData();
-        
-        
+
+
     }//GEN-LAST:event_btnSubmitActionPerformed
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
@@ -176,7 +191,7 @@ public class MainFrame extends javax.swing.JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }//GEN-LAST:event_btnHapusActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
@@ -190,11 +205,10 @@ public class MainFrame extends javax.swing.JFrame {
         //DefaultTableModel m = (DefaultTableModel) tblMahasiswa.getModel();
         int id = Integer.parseInt(modelMahasiswa.getValueAt(row, 0).toString());
 
-
         try {
             Connection con = DbConnection.connect();
             PreparedStatement pst = con.prepareStatement(
-                "UPDATE mahasiswa SET nim=?, nama=? WHERE id=?"
+                    "UPDATE mahasiswa SET nim=?, nama=? WHERE id=?"
             );
             pst.setString(1, txtNim.getText());
             pst.setString(2, txtNama.getText());
@@ -210,26 +224,44 @@ public class MainFrame extends javax.swing.JFrame {
     private void tblMahasiswaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblMahasiswaMouseClicked
         // TODO add your handling code here:
         int row = tblMahasiswa.getSelectedRow();
-    if (row == -1) {
-        return;
-    }
+        if (row == -1) {
+            return;
+        }
 
-    // ambil model
-    DefaultTableModel m = (DefaultTableModel) tblMahasiswa.getModel();
+        // ambil model
+        DefaultTableModel m = (DefaultTableModel) tblMahasiswa.getModel();
 
-    // ambil nilai berdasarkan kolom
-    String nama = m.getValueAt(row, 1).toString();  // kolom 1 = Nama
-    String nim = m.getValueAt(row, 2).toString();   // kolom 2 = NIM
+        // ambil nilai berdasarkan kolom
+        String nama = m.getValueAt(row, 1).toString();  // kolom 1 = Nama
+        String nim = m.getValueAt(row, 2).toString();   // kolom 2 = NIM
 
-    // set ke textfield
-    txtNim.setText(nim);
-    txtNama.setText(nama);
+        // set ke textfield
+        txtNim.setText(nim);
+        txtNama.setText(nama);
     }//GEN-LAST:event_tblMahasiswaMouseClicked
 
-    private void insert(){
-        
+    private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        int result = chooser.showOpenDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File file = chooser.getSelectedFile();
+        if (file == null || !file.exists()) {
+            JOptionPane.showMessageDialog(this, "File tidak ditemukan!");
+            return;
+        }
+        Mahasiswa.uploudCSV(file);
+        loadData();
+
+    }//GEN-LAST:event_btnUploadActionPerformed
+
+    private void insert() {
+
     }
-    private void loadData(){
+
+    private void loadData() {
         //select * from mahasiswa
         modelMahasiswa.setRowCount(0);
 
@@ -239,17 +271,18 @@ public class MainFrame extends javax.swing.JFrame {
             ResultSet rs = st.executeQuery("SELECT * FROM mahasiswa ORDER BY id ASC");
 
             while (rs.next()) {
-                
+
                 modelMahasiswa.addRow(new Object[]{
-                    rs.getInt("id"),         
-                    rs.getString("nama"),     
-                    rs.getString("nim")       
+                    rs.getInt("id"),
+                    rs.getString("nama"),
+                    rs.getString("nim")
                 });
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     /**
      * @param args the command line arguments
      */
@@ -292,6 +325,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnEdit;
     private javax.swing.JButton btnHapus;
     private javax.swing.JButton btnSubmit;
+    private javax.swing.JButton btnUpload;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblNama;
     private javax.swing.JLabel lblNim;
